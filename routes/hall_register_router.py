@@ -47,13 +47,13 @@ async def register_hall(
     # Process images and generate URLs
     image_urls = []
     # base_url = "http://127.0.0.1:8000"  # Replace with your actual server's base URL
-    base_url = str(request.base_url).rstrip("/")
+    base_url = "https://venueta.vpearlsolutions.com"
     for image in images:
         image_path = os.path.join(upload_dir, image.filename)
         with open(image_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
         # Create URL path for the image
-        image_urls.append(f"{base_url}/uploaded_images/{image.filename}")
+        image_urls.append(f"{base_url}/api/uploaded_images/{image.filename}")
 
     # Register new hall in the database
     new_hall = EventHallRegister(
