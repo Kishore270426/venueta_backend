@@ -53,7 +53,7 @@ async def register_hall(
         with open(image_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
         # Create URL path for the image
-        image_urls.append(f"{base_url}/uploaded_images/{image.filename}")
+        image_urls.append(f"{base_url}/api/uploaded_images/{image.filename}")
 
     # Register new hall in the database
     new_hall = EventHallRegister(
