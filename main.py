@@ -25,7 +25,7 @@ app = FastAPI(docs_url="/docs", redoc_url="/redoc")
 configure_middleware(app)
 
 # Mount Static Files
-app.mount("/api/uploaded_images", StaticFiles(directory="uploaded_images"), name="api_uploaded_images")
+app.mount("/api/uploaded_images/", StaticFiles(directory="uploaded_images"), name="api_uploaded_images")
 # Create Database Tables
 Base.metadata.create_all(bind=engine)  # ✅ Correct way to create tables
 
