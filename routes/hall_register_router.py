@@ -34,7 +34,7 @@ async def register_hall(
 ):
 
     # Ensure the images directory exists
-    upload_dir = "uploaded_images"
+    upload_dir = "/home/vpearl/apps/venueta_backend/uploaded_images"
     os.makedirs(upload_dir, exist_ok=True)
 
     # Validate the number of images
