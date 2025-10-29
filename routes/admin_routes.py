@@ -207,67 +207,6 @@ def get_approved_bookings_by_admin( db: Session = Depends(get_db),current_admin:
 
 
 
-# @admin_router.post("/invoices/", response_model=InvoiceResponse)
-# def create_invoice(invoice_data: InvoiceCreate, db: Session = Depends(get_db), current_admin: str = Depends(auth.get_current_adminbyID)):
-
-    
-    
-#     new_invoice = Invoice(
-#         booking_id=invoice_data.booking_id,
-#         hall_id=invoice_data.hall_id,
-#         user_id=invoice_data.user_id,
-#         maintenance_charge=invoice_data.maintenance_charge,
-#         cleaning_charge=invoice_data.cleaning_charge,
-#         hall_total_price=invoice_data.hall_total_price,
-#     )
-    
-#     db.add(new_invoice)
-#     db.commit()
-#     db.refresh(new_invoice)
-    
-#     booking = db.query(Booking).filter(Booking.id == invoice_data.booking_id).first()
-#     if booking:
-#         booking.invoice_sent = True
-#         db.commit()
-#         db.refresh(booking)
-#     else:
-#         raise HTTPException(status_code=404, detail="Booking not found")
-    
-#     send_invoice(adminid ,recipient_email,invoice_data.user_id,invoice_data.cleaning_charge,invoice_data.maintenance_charge,invoice_data.hall_total_price)
-    
-#     return new_invoice
-
-
-# def send_invoice(adminid ,recipient_email,invoice_data.user_id,invoice_data.cleaning_charge,invoice_data.maintenance_charge,invoice_data.hall_total_price):
-    
-#     admin = db.query(Admin).filter(Admin.id == adminid).first()
-    
-#     if not admin:
-#         raise HTTPException(status_code=404, detail="Admin not found")
-    
-#     admindetails = Invoice(
-       
-#     )
-#     try:
-
-#         msg = EmailMessage()
-#         msg["From"] = sender_email
-#         msg["To"] = recipient_email
-#         msg["Subject"] = "hall invoice bill"
-#         msg.set_content(body)
-
-       
-#         with smtplib.SMTP("smtp.gmail.com", 587) as server:
-#             server.starttls()  
-#             server.login(sender_email, sender_password)  
-#             server.send_message(msg)  
-
-#         return {"message": "Email sent successfully"}
-
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
-
-
 @admin_router.post("/invoices/", response_model=InvoiceResponse)
 async def create_invoice(
     invoice_data: InvoiceCreate, 
@@ -276,7 +215,11 @@ async def create_invoice(
 ):
     
     try:
-        
+        hall_name_id=invoice_data.hall_id
+        hall = db.query(EventHallRegister).filter(EventHallRegister.id == hall_name_id).first()
+        if not hall:
+            raise HTTPException(status_code=404, detail="Hall not found")
+        hall_name = hall.hall_name
         try:
             new_invoice = Invoice(
                 booking_id=invoice_data.booking_id,
@@ -333,7 +276,7 @@ async def create_invoice(
                 useraddress=user.address,
                 usercity=user.city_name,
                 usercountry=user.country_name,
-                
+                hall_name=hall_name,
                 adminname=admin.username,
                 adminphonenumber=admin.phone_number, 
                 admin_email=admin.email,
@@ -357,6 +300,16 @@ async def create_invoice(
 
 
 
+from datetime import datetime
+import random
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
+from email.message import EmailMessage
+import smtplib
+import os
+from fastapi import HTTPException
 
 async def send_invoice(
     username: str,
@@ -374,9 +327,13 @@ async def send_invoice(
     maintenance_charge: float,
     cleaning_charge: float,
     total_price: float,
-
+    hall_name: str,
+    sender_email: str,
+    sender_password: str,
 ):
-    print(admin_email, admincity, admincountry)
+    # Generate invoice ID
+    invoice_id = f"INV-{random.randint(10000, 99999)}"
+    current_date = datetime.now().strftime("%B %d, %Y")
 
     body = f"""
     <!DOCTYPE html>
@@ -417,96 +374,239 @@ async def send_invoice(
     pdf_filename = "invoice.pdf"
     
     c = canvas.Canvas(pdf_filename, pagesize=letter)
+    width, height = letter
 
-   
-    c.setFont("Helvetica-Bold", 20)
-    c.setFillColor(colors.black)  
-    c.drawString(230, 770, "INVOICE")
+    # Modern gradient header - Purple to Blue
+    c.setFillColorRGB(0.29, 0.24, 0.55)  # Deep purple
+    c.rect(0, height - 130, width, 130, fill=1, stroke=0)
+    
+    # Accent stripe
+    c.setFillColorRGB(0.95, 0.61, 0.07)  # Gold/Orange accent
+    c.rect(0, height - 140, width, 10, fill=1, stroke=0)
 
-   
-    c.setLineWidth(2)
-    c.setStrokeColor(colors.black)
-    c.line(50, 760, 550, 760)
+    # Company/Logo Area (Left side of header)
+    c.setFont("Helvetica-Bold", 24)
+    c.setFillColorRGB(1, 1, 1)
+    c.drawString(50, height - 50, "HALL BOOKING")
+    
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(0.9, 0.9, 0.9)
+    c.drawString(50, height - 70, f"{adminname}")
+    c.drawString(50, height - 85, f"Phone: {adminphonenumber}")
+    c.drawString(50, height - 100, f"Email: {admin_email}")
 
+    # INVOICE text - Right side of header
+    c.setFont("Helvetica-Bold", 42)
+    c.setFillColorRGB(1, 1, 1)
+    c.drawRightString(width - 50, height - 50, "INVOICE")
+
+    # Invoice details - Right side
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.drawRightString(width - 50, height - 75, "INVOICE NO:")
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(1, 1, 1)
+    c.drawRightString(width - 50, height - 90, invoice_id)
+    
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.drawRightString(width - 50, height - 105, "DATE:")
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(1, 1, 1)
+    c.drawRightString(width - 50, height - 120, current_date)
+
+    # Hall Name - Prominent centered banner
+    c.setFillColorRGB(0.95, 0.95, 0.97)  # Light gray background
+    c.rect(50, height - 190, width - 100, 40, fill=1, stroke=0)
+    
+    c.setFont("Helvetica-Bold", 18)
+    c.setFillColorRGB(0.29, 0.24, 0.55)
+    hall_text_width = c.stringWidth(hall_name.upper(), "Helvetica-Bold", 18)
+    c.drawString((width - hall_text_width) / 2, height - 175, hall_name.upper())
+
+    # Left border accent
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.rect(50, height - 190, 5, 40, fill=1, stroke=0)
+
+    # Bill To Section - Modern Card Style
+    y_start = height - 240
+    
+    # Card background
+    c.setFillColorRGB(0.98, 0.98, 0.99)
+    c.roundRect(50, y_start - 110, 230, 100, 5, fill=1, stroke=0)
+    
+    # Header bar
+    c.setFillColorRGB(0.29, 0.24, 0.55)
+    c.roundRect(50, y_start - 10, 230, 25, 5, fill=1, stroke=0)
     
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, 720, "From")
+    c.setFillColorRGB(1, 1, 1)
+    c.drawString(60, y_start - 5, "BILL TO")
 
-    c.setFont("Helvetica", 10)
-    c.drawString(50, 700, f"Name: {adminname}")
-    c.drawString(50, 680, f"Phone Number: {adminphonenumber}")
-    c.drawString(50, 660, f"Address: {adminaddress}, {admincity}, {admincountry}")
+    # Customer details
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColorRGB(0.2, 0.2, 0.2)
+    c.drawString(60, y_start - 35, username)
+    
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(60, y_start - 50, f"📱 {userphonenumber}")
+    c.drawString(60, y_start - 65, f"📧 {useremail}")
+    c.drawString(60, y_start - 80, f"📍 {useraddress}")
+    c.drawString(60, y_start - 95, f"   {usercity}, {usercountry}")
 
+    # Payment Details Card (Right side)
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.roundRect(320, y_start - 10, 230, 25, 5, fill=1, stroke=0)
+    
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(300, 720, "To")
+    c.setFillColorRGB(1, 1, 1)
+    c.drawString(330, y_start - 5, "PAYMENT DETAILS")
 
-    c.setFont("Helvetica", 10)
-    c.drawString(300, 700, f"Name: {username}")
-    c.drawString(300, 680, f"Phone Number: {userphonenumber}")
-    c.drawString(300, 660, f"Address: {useraddress}, {usercity}, {usercountry}")
+    c.setFillColorRGB(0.98, 0.98, 0.99)
+    c.roundRect(320, y_start - 110, 230, 100, 5, fill=1, stroke=0)
 
-  
-    c.setStrokeColor(colors.black)
-    c.setLineWidth(1)
-    c.line(50, 640, 550, 640)
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(330, y_start - 35, "Payment Method:")
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColorRGB(0.2, 0.2, 0.2)
+    c.drawString(330, y_start - 50, "Online Transfer / Cash")
+    
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(330, y_start - 70, "Service Provider:")
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColorRGB(0.2, 0.2, 0.2)
+    c.drawString(330, y_start - 85, adminname)
+    c.setFont("Helvetica", 8)
+    c.drawString(330, y_start - 100, f"{admincity}, {admincountry}")
 
-  
+    # Invoice Items Table - Modern Design
+    table_y = y_start - 160
+    
+    # Calculate amounts
+    subtotal = maintenance_charge + cleaning_charge
+    gst_amount = subtotal * 0.18
+    grand_total = subtotal + gst_amount
+
     data = [
-        ['Description', 'Amount'],
-        ['Maintenance Charge', f'{maintenance_charge}'],
-        ['Cleaning Charge', f'{cleaning_charge}'],
-        ['GST', "18%"],
-        ['Total Price', f'{total_price}'],
+        ['#', 'DESCRIPTION', 'AMOUNT'],
+        ['1', 'Maintenance Charge', f'₹ {maintenance_charge:,.2f}'],
+        ['2', 'Cleaning Charge', f'₹ {cleaning_charge:,.2f}'],
     ]
 
-    # Table
-    table = Table(data, colWidths=[400, 100], rowHeights=[30] * len(data))
+    table = Table(data, colWidths=[40, 360, 100], rowHeights=[32, 30, 30])
     table.setStyle(TableStyle([
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),  
-        ('LINEBELOW', (0, 0), (-1, 0), 1, colors.black),  
-        ('GRID', (0, 0), (-1, -1), 1, colors.black), 
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'), 
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), 
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),  
+        # Header
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4A3F70')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+        ('ALIGN', (1, 0), (1, 0), 'LEFT'),
+        ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
+        
+        # Data rows
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('FONTNAME', (0, 1), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+        ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
+        
+        # Grid
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E0E0E0')),
+        ('LINEBELOW', (0, 0), (-1, 0), 2, colors.HexColor('#4A3F70')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 12),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
     ]))
 
-  
     table.wrapOn(c, 50, 50)
-    table.drawOn(c, 50, 400) 
+    table.drawOn(c, 50, table_y)
 
-   
-    c.setFont("Helvetica", 10)
-    c.setFillColor(colors.black)
-    c.drawString(50, 100, "Thank you for your business!")
-    c.drawString(50, 85, "For any inquiries, contact us at support@admin.com")
-    c.drawString(50, 70, "This invoice is generated automatically and is valid without a signature.")
+    # Summary section - Modern boxes
+    summary_y = table_y - 130
+    
+    # Subtotal
+    c.setStrokeColorRGB(0.85, 0.85, 0.85)
+    c.setLineWidth(1)
+    c.rect(300, summary_y + 80, 250, 30, fill=0, stroke=1)
+    c.setFont("Helvetica", 11)
+    c.setFillColorRGB(0.3, 0.3, 0.3)
+    c.drawString(310, summary_y + 90, "Subtotal:")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawRightString(540, summary_y + 90, f"₹ {subtotal:,.2f}")
 
-   
+    # GST
+    c.rect(300, summary_y + 50, 250, 30, fill=0, stroke=1)
+    c.setFont("Helvetica", 11)
+    c.setFillColorRGB(0.3, 0.3, 0.3)
+    c.drawString(310, summary_y + 60, "GST (18%):")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawRightString(540, summary_y + 60, f"₹ {gst_amount:,.2f}")
+
+    # Grand Total - Highlighted
+    c.setFillColorRGB(0.29, 0.24, 0.55)
+    c.rect(300, summary_y + 10, 250, 40, fill=1, stroke=0)
+    
+    c.setFont("Helvetica-Bold", 14)
+    c.setFillColorRGB(1, 1, 1)
+    c.drawString(310, summary_y + 22, "GRAND TOTAL:")
+    c.setFont("Helvetica-Bold", 16)
+    c.drawRightString(540, summary_y + 22, f"₹ {grand_total:,.2f}")
+
+    # Terms & Conditions Box
+    terms_y = summary_y - 40
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColorRGB(0.29, 0.24, 0.55)
+    c.drawString(50, terms_y, "TERMS & CONDITIONS")
+    
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(50, terms_y - 15, "• Payment is due within 7 days of invoice date")
+    c.drawString(50, terms_y - 28, "• Late payments may incur additional charges")
+    c.drawString(50, terms_y - 41, "• Please bring a copy of this invoice on the day of booking")
+
+    # Footer
+    c.setStrokeColorRGB(0.95, 0.61, 0.07)
+    c.setLineWidth(3)
+    c.line(50, 70, width - 50, 70)
+    
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColorRGB(0.29, 0.24, 0.55)
+    c.drawCentredString(width / 2, 50, "Thank you for your business!")
+    
+    c.setFont("Helvetica", 7)
+    c.setFillColorRGB(0.5, 0.5, 0.5)
+    c.drawCentredString(width / 2, 35, f"For inquiries: {admin_email} | Phone: {adminphonenumber}")
+    c.drawCentredString(width / 2, 23, "This is a computer-generated invoice")
+
     c.save()
 
     try:
-        
         msg = EmailMessage()
         msg["From"] = sender_email
         msg["To"] = useremail
-        msg["Subject"] = "Hall Invoice Bill"
+        msg["Subject"] = f"Invoice {invoice_id} - {hall_name} Booking"
         msg.set_content(body, subtype="html")
 
-       
         with open(pdf_filename, 'rb') as pdf_file:
             msg.add_attachment(pdf_file.read(), maintype='application', subtype='pdf', filename=pdf_filename)
 
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()  
+            server.starttls()
             server.login(sender_email, sender_password)
             server.send_message(msg)
 
-        
         os.remove(pdf_filename)
 
         return {"message": "Email sent successfully"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
-
