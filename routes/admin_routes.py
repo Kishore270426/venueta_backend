@@ -390,119 +390,119 @@ async def send_invoice(
     c.setFillColorRGB(0.95, 0.61, 0.07)  # Gold/Orange accent
     c.rect(0, height - 140, width, 10, fill=1, stroke=0)
 
-    # Company/Logo Area (Left side of header)
-    c.setFont("Helvetica-Bold", 24)
+    # INVOICE ID and DATE - Left side (as requested)
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.drawString(50, height - 50, "INVOICE NO:")
+    c.setFont("Helvetica", 12)
     c.setFillColorRGB(1, 1, 1)
-    c.drawString(50, height - 50, "HALL BOOKING")
+    c.drawString(50, height - 70, invoice_id)
     
-    c.setFont("Helvetica", 10)
-    c.setFillColorRGB(0.9, 0.9, 0.9)
-    c.drawString(50, height - 70, f"{adminname}")
-    c.drawString(50, height - 85, f"Phone: {adminphonenumber}")
-    c.drawString(50, height - 100, f"Email: {admin_email}")
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.drawString(50, height - 90, "DATE:")
+    c.setFont("Helvetica", 12)
+    c.setFillColorRGB(1, 1, 1)
+    c.drawString(50, height - 110, current_date)
 
     # INVOICE text - Right side of header
     c.setFont("Helvetica-Bold", 42)
     c.setFillColorRGB(1, 1, 1)
-    c.drawRightString(width - 50, height - 50, "INVOICE")
+    c.drawRightString(width - 50, height - 80, "INVOICE")
 
-    # Invoice details - Right side
-    c.setFont("Helvetica-Bold", 10)
-    c.setFillColorRGB(0.95, 0.61, 0.07)
-    c.drawRightString(width - 50, height - 75, "INVOICE NO:")
-    c.setFont("Helvetica", 10)
+    # Company Info - Right side
+    c.setFont("Helvetica-Bold", 14)
     c.setFillColorRGB(1, 1, 1)
-    c.drawRightString(width - 50, height - 90, invoice_id)
+    c.drawRightString(width - 50, height - 110, f"{adminname}")
     
-    c.setFont("Helvetica-Bold", 10)
-    c.setFillColorRGB(0.95, 0.61, 0.07)
-    c.drawRightString(width - 50, height - 105, "DATE:")
     c.setFont("Helvetica", 10)
-    c.setFillColorRGB(1, 1, 1)
-    c.drawRightString(width - 50, height - 120, current_date)
+    c.setFillColorRGB(0.9, 0.9, 0.9)
+    c.drawRightString(width - 50, height - 125, f"Phone: {adminphonenumber} | Email: {admin_email}")
 
-    # Hall Name - Prominent centered banner
+    # Hall Name - Centered heading below header
     c.setFillColorRGB(0.95, 0.95, 0.97)  # Light gray background
-    c.rect(50, height - 190, width - 100, 40, fill=1, stroke=0)
+    c.rect(50, height - 200, width - 100, 40, fill=1, stroke=0)
     
-    c.setFont("Helvetica-Bold", 18)
+    c.setFont("Helvetica-Bold", 20)
     c.setFillColorRGB(0.29, 0.24, 0.55)
-    hall_text_width = c.stringWidth(hall_name.upper(), "Helvetica-Bold", 18)
-    c.drawString((width - hall_text_width) / 2, height - 175, hall_name.upper())
+    hall_text_width = c.stringWidth(hall_name.upper(), "Helvetica-Bold", 20)
+    c.drawString((width - hall_text_width) / 2, height - 185, hall_name.upper())
 
     # Left border accent
     c.setFillColorRGB(0.95, 0.61, 0.07)
-    c.rect(50, height - 190, 5, 40, fill=1, stroke=0)
+    c.rect(50, height - 200, 5, 40, fill=1, stroke=0)
 
-    # Bill To Section - Modern Card Style
-    y_start = height - 240
+    # FROM and TO Address Sections - Side by side
+    y_start = height - 260
     
-    # Card background
+    # FROM Section - Left side
     c.setFillColorRGB(0.98, 0.98, 0.99)
-    c.roundRect(50, y_start - 110, 230, 100, 5, fill=1, stroke=0)
+    c.roundRect(50, y_start - 120, 250, 110, 5, fill=1, stroke=0)
     
     # Header bar
     c.setFillColorRGB(0.29, 0.24, 0.55)
-    c.roundRect(50, y_start - 10, 230, 25, 5, fill=1, stroke=0)
+    c.roundRect(50, y_start - 20, 250, 25, 5, fill=1, stroke=0)
     
     c.setFont("Helvetica-Bold", 12)
     c.setFillColorRGB(1, 1, 1)
-    c.drawString(60, y_start - 5, "BILL TO")
+    c.drawString(60, y_start - 15, "FROM")
+
+    # Admin details
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColorRGB(0.2, 0.2, 0.2)
+    c.drawString(60, y_start - 45, adminname)
+    
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(60, y_start - 60, f"📱 {adminphonenumber}")
+    c.drawString(60, y_start - 75, f"📧 {admin_email}")
+    c.drawString(60, y_start - 90, f"📍 {adminaddress}")
+    c.drawString(60, y_start - 105, f"   {admincity}, {admincountry}")
+
+    # TO Section - Right side
+    c.setFillColorRGB(0.98, 0.98, 0.99)
+    c.roundRect(320, y_start - 120, 230, 110, 5, fill=1, stroke=0)
+    
+    # Header bar
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.roundRect(320, y_start - 20, 230, 25, 5, fill=1, stroke=0)
+    
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColorRGB(1, 1, 1)
+    c.drawString(330, y_start - 15, "BILL TO")
 
     # Customer details
     c.setFont("Helvetica-Bold", 11)
     c.setFillColorRGB(0.2, 0.2, 0.2)
-    c.drawString(60, y_start - 35, username)
+    c.drawString(330, y_start - 45, username)
     
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(0.4, 0.4, 0.4)
-    c.drawString(60, y_start - 50, f"📱 {userphonenumber}")
-    c.drawString(60, y_start - 65, f"📧 {useremail}")
-    c.drawString(60, y_start - 80, f"📍 {useraddress}")
-    c.drawString(60, y_start - 95, f"   {usercity}, {usercountry}")
+    c.drawString(330, y_start - 60, f"📱 {userphonenumber}")
+    c.drawString(330, y_start - 75, f"📧 {useremail}")
+    c.drawString(330, y_start - 90, f"📍 {useraddress}")
+    c.drawString(330, y_start - 105, f"   {usercity}, {usercountry}")
 
-    # Payment Details Card (Right side)
-    c.setFillColorRGB(0.95, 0.61, 0.07)
-    c.roundRect(320, y_start - 10, 230, 25, 5, fill=1, stroke=0)
-    
-    c.setFont("Helvetica-Bold", 12)
-    c.setFillColorRGB(1, 1, 1)
-    c.drawString(330, y_start - 5, "PAYMENT DETAILS")
-
-    c.setFillColorRGB(0.98, 0.98, 0.99)
-    c.roundRect(320, y_start - 110, 230, 100, 5, fill=1, stroke=0)
-
-    c.setFont("Helvetica", 9)
-    c.setFillColorRGB(0.4, 0.4, 0.4)
-    c.drawString(330, y_start - 35, "Payment Method:")
-    c.setFont("Helvetica-Bold", 9)
-    c.setFillColorRGB(0.2, 0.2, 0.2)
-    c.drawString(330, y_start - 50, "Online Transfer / Cash")
-    
-    c.setFont("Helvetica", 9)
-    c.setFillColorRGB(0.4, 0.4, 0.4)
-    c.drawString(330, y_start - 70, "Service Provider:")
-    c.setFont("Helvetica-Bold", 9)
-    c.setFillColorRGB(0.2, 0.2, 0.2)
-    c.drawString(330, y_start - 85, adminname)
-    c.setFont("Helvetica", 8)
-    c.drawString(330, y_start - 100, f"{admincity}, {admincountry}")
-
-    # Invoice Items Table - Modern Design
+    # Billing Calculation Table - As requested
     table_y = y_start - 160
     
-    # Calculate amounts
-    subtotal = maintenance_charge + cleaning_charge
-    gst_amount = subtotal * 0.18
-    grand_total = subtotal + gst_amount
+    # Calculate amounts as per requirements
+    final_price = maintenance_charge + cleaning_charge + total_price
+    gst_amount = final_price * 0.18
+    grand_total = final_price + gst_amount
 
+    # Table data with proper calculations
     data = [
-        ['#', 'DESCRIPTION', 'AMOUNT'],
-        ['1', 'Maintenance Charge', f'₹ {maintenance_charge:,.2f}'],
-        ['2', 'Cleaning Charge', f'₹ {cleaning_charge:,.2f}'],
+        ['#', 'DESCRIPTION', 'AMOUNT (₹)'],
+        ['1', 'Maintenance Charge', f'{maintenance_charge:,.2f}'],
+        ['2', 'Cleaning Charge', f'{cleaning_charge:,.2f}'],
+        ['3', 'Total Price', f'{total_price:,.2f}'],
+        ['', 'Final Price (1+2+3)', f'{final_price:,.2f}'],
+        ['', 'GST (18%)', f'{gst_amount:,.2f}'],
+        ['', 'GRAND TOTAL', f'{grand_total:,.2f}'],
     ]
 
-    table = Table(data, colWidths=[40, 360, 100], rowHeights=[32, 30, 30])
+    table = Table(data, colWidths=[40, 360, 100], rowHeights=[32, 25, 25, 25, 25, 25, 30])
     table.setStyle(TableStyle([
         # Header
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4A3F70')),
@@ -513,19 +513,45 @@ async def send_invoice(
         ('ALIGN', (1, 0), (1, 0), 'LEFT'),
         ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
         
-        # Data rows
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
-        ('FONTNAME', (0, 1), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
-        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
-        ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
+        # Data rows (1-3)
+        ('BACKGROUND', (0, 1), (-1, 3), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, 3), colors.black),
+        ('FONTNAME', (0, 1), (0, 3), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 1), (-1, 3), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, 3), 10),
+        ('ALIGN', (0, 1), (0, 3), 'CENTER'),
+        ('ALIGN', (1, 1), (1, 3), 'LEFT'),
+        ('ALIGN', (2, 1), (2, 3), 'RIGHT'),
         
-        # Grid
+        # Final Price row
+        ('BACKGROUND', (0, 4), (-1, 4), colors.HexColor('#F5F5F5')),
+        ('TEXTCOLOR', (0, 4), (-1, 4), colors.black),
+        ('FONTNAME', (1, 4), (-1, 4), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 4), (-1, 4), 10),
+        ('ALIGN', (1, 4), (1, 4), 'RIGHT'),
+        ('ALIGN', (2, 4), (2, 4), 'RIGHT'),
+        
+        # GST row
+        ('BACKGROUND', (0, 5), (-1, 5), colors.HexColor('#F0F0F0')),
+        ('TEXTCOLOR', (0, 5), (-1, 5), colors.black),
+        ('FONTNAME', (1, 5), (-1, 5), 'Helvetica'),
+        ('FONTSIZE', (0, 5), (-1, 5), 10),
+        ('ALIGN', (1, 5), (1, 5), 'RIGHT'),
+        ('ALIGN', (2, 5), (2, 5), 'RIGHT'),
+        
+        # Grand Total row - Highlighted
+        ('BACKGROUND', (0, 6), (-1, 6), colors.HexColor('#4A3F70')),
+        ('TEXTCOLOR', (0, 6), (-1, 6), colors.white),
+        ('FONTNAME', (0, 6), (-1, 6), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 6), (-1, 6), 12),
+        ('ALIGN', (1, 6), (1, 6), 'RIGHT'),
+        ('ALIGN', (2, 6), (2, 6), 'RIGHT'),
+        
+        # Grid and styling
         ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E0E0E0')),
         ('LINEBELOW', (0, 0), (-1, 0), 2, colors.HexColor('#4A3F70')),
+        ('LINEABOVE', (0, 4), (-1, 4), 1, colors.HexColor('#4A3F70')),
+        ('LINEABOVE', (0, 6), (-1, 6), 2, colors.HexColor('#4A3F70')),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('LEFTPADDING', (0, 0), (-1, -1), 12),
         ('RIGHTPADDING', (0, 0), (-1, -1), 12),
@@ -536,39 +562,25 @@ async def send_invoice(
     table.wrapOn(c, 50, 50)
     table.drawOn(c, 50, table_y)
 
-    # Summary section - Modern boxes
-    summary_y = table_y - 130
+    # Payment Instructions
+    payment_y = table_y - 80
+    c.setFillColorRGB(0.98, 0.98, 0.99)
+    c.roundRect(50, payment_y - 60, width - 100, 50, 5, fill=1, stroke=0)
     
-    # Subtotal
-    c.setStrokeColorRGB(0.85, 0.85, 0.85)
-    c.setLineWidth(1)
-    c.rect(300, summary_y + 80, 250, 30, fill=0, stroke=1)
-    c.setFont("Helvetica", 11)
-    c.setFillColorRGB(0.3, 0.3, 0.3)
-    c.drawString(310, summary_y + 90, "Subtotal:")
-    c.setFont("Helvetica-Bold", 11)
-    c.drawRightString(540, summary_y + 90, f"₹ {subtotal:,.2f}")
-
-    # GST
-    c.rect(300, summary_y + 50, 250, 30, fill=0, stroke=1)
-    c.setFont("Helvetica", 11)
-    c.setFillColorRGB(0.3, 0.3, 0.3)
-    c.drawString(310, summary_y + 60, "GST (18%):")
-    c.setFont("Helvetica-Bold", 11)
-    c.drawRightString(540, summary_y + 60, f"₹ {gst_amount:,.2f}")
-
-    # Grand Total - Highlighted
-    c.setFillColorRGB(0.29, 0.24, 0.55)
-    c.rect(300, summary_y + 10, 250, 40, fill=1, stroke=0)
+    c.setFillColorRGB(0.95, 0.61, 0.07)
+    c.roundRect(50, payment_y - 10, width - 100, 25, 5, fill=1, stroke=0)
     
-    c.setFont("Helvetica-Bold", 14)
+    c.setFont("Helvetica-Bold", 12)
     c.setFillColorRGB(1, 1, 1)
-    c.drawString(310, summary_y + 22, "GRAND TOTAL:")
-    c.setFont("Helvetica-Bold", 16)
-    c.drawRightString(540, summary_y + 22, f"₹ {grand_total:,.2f}")
+    c.drawString(60, payment_y - 5, "PAYMENT INSTRUCTIONS")
+    
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.3, 0.3, 0.3)
+    c.drawString(60, payment_y - 30, "Payment Method: Online Transfer / Cash")
+    c.drawString(60, payment_y - 45, f"Due Date: {current_date}")
 
-    # Terms & Conditions Box
-    terms_y = summary_y - 40
+    # Terms & Conditions
+    terms_y = payment_y - 80
     c.setFont("Helvetica-Bold", 10)
     c.setFillColorRGB(0.29, 0.24, 0.55)
     c.drawString(50, terms_y, "TERMS & CONDITIONS")
