@@ -41,7 +41,7 @@ admin_router = APIRouter()
 
 load_dotenv()
 
-recipient_email="letsmail.sakthivel@gmail.com"
+
 
 sender_email = os.getenv('sender_email')
 sender_password = os.getenv('sender_password')
