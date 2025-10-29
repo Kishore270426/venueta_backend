@@ -292,7 +292,9 @@ async def create_invoice(
                 
                 maintenance_charge=invoice_data.maintenance_charge,
                 cleaning_charge=invoice_data.cleaning_charge,
-                total_price=invoice_data.hall_total_price
+                total_price=invoice_data.hall_total_price,
+                sender_email=sender_email,
+                sender_password=sender_password
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error sending invoice email: {str(e)}")
