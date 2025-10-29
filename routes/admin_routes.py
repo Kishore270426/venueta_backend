@@ -207,6 +207,10 @@ def get_approved_bookings_by_admin( db: Session = Depends(get_db),current_admin:
 
 from models.event_hall_register import EventHallRegister
 
+
+sender_email="riverpearlsolutions@gmail.com"
+sender_password="erny ltum bxfy vtuz"
+
 @admin_router.post("/invoices/", response_model=InvoiceResponse)
 async def create_invoice(
     invoice_data: InvoiceCreate, 
