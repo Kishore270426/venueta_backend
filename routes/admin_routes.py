@@ -205,7 +205,7 @@ def get_approved_bookings_by_admin( db: Session = Depends(get_db),current_admin:
     
     return approved_bookings
 
-
+from models.event_hall_register import EventHallRegister
 
 @admin_router.post("/invoices/", response_model=InvoiceResponse)
 async def create_invoice(
